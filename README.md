@@ -1,13 +1,13 @@
 # iir_hilbert
 IIR Hilbert Transformers
 
-This is where a quest to undestand the "Phase Difference Network" (PDN) shown in Fig 14-25 of Hal Chamberlin's Musical Applications of Microprocessors 2nd Edition.
-It's part of a proposed Parametric Chorus Simulator.
+This is where a quest to undestand the "Phase Difference Network" (PDN) shown in Fig 14-25 of Hal Chamberlin's Musical Applications of Microprocessors 2nd Edition has led me.
+The PDN makes up part of a proposed Parametric Chorus Simulator.
 I still don't fully understand how the values used in his version were defined, but it set me to trying to understand how it worked.
 
 Michael Gerzon also wrote about PDNs in some of his work on Synthetic Stero Reverb.
 
-Some research led me to using the Hilbert Transform.
+Research led me to using the Hilbert Transform.
 Octave has hilbert.m - but that's FFT based.
 Csound has a hilbert transform opcode that is implemented as an IIR Hilbert transformer.
 A particularly intriguing comment states:
