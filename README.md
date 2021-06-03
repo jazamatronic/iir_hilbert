@@ -18,3 +18,6 @@ The magic pole numbers are from the MEH which can not be obtained for love nor m
 
 So I set about following the crumbs, reading papers and scouring old second hand DSP textbooks.
 This is what I've ended up with, a couple of functions that can generate the polynomials needed for IIR implementation of PDNs.
+
+These .m functions were developed using GNU Octave and its signal package.
+I've tried to provide references for all the steps.
