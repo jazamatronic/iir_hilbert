@@ -1,3 +1,9 @@
+%
+% Parametric chorus simulator
+% From Fig 14-25 of Hal Chamberlin's Musical Applications of Microprocessors - Second Edition
+%
+% Jared ANDERSON
+% 20210609
 clear all
 
 % Enter some audio

@@ -110,12 +110,17 @@ Ai(length(Ai) + 1) = 0;
 Bi = fliplr(-Ai);
 
 % Test
-%  fs = 48e3
-%  ts = 1/fs
+%  fs = 48e3;
+%  ts = 1/fs;
 %  t = [0:ts:0.2-ts];
 %  f1 = 220;
 %  s1 = sin(t * f1 * 2 * pi);
 %  
+%  wc = 0.495;
+%  dp  = 0.0001;
+%  ds  = 0.1;
+%  [B, A, Bi, Ai] = iir_hilbert_odd(wc, dp, ds)
+%
 %  out0 = filter(B, A, s1);
 %  out1 = filter(Bi, Ai, s1);
 %  figure(1)
