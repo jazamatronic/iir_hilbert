@@ -8,8 +8,7 @@ clear all
 pkg load miscellaneous
 
 % Enter some audio
-%[y, fs] = audioread("<your_fave_wave>");
-[y, fs] = audioread("flute_loop.mono.wav");
+[y, fs] = audioread("<your_fave_wave>");
 
 ts = 1/fs;
 
