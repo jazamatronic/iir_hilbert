@@ -5,9 +5,11 @@
 % Jared ANDERSON
 % 20210609
 clear all
+pkg load miscellaneous
 
 % Enter some audio
-[y, fs] = audioread("<your_fave_wave>");
+%[y, fs] = audioread("<your_fave_wave>");
+[y, fs] = audioread("flute_loop.mono.wav");
 
 ts = 1/fs;
 
@@ -17,20 +19,22 @@ i_bw = 40;
 
 % Lots of filtered random noise used
 % simple FIR used here, n_noise is its order
-fc_noise = 5;
+fc_noise = 1;
 wc_noise = fc_noise / fs; % argument W to fir1 is already normalized to 2pi
 n_noise = 128;
 
 % po_max is max phase offset
 % mod_frac is fraction of bw for the band i.e. 1/12 = a semitone
 po_max = 10 * ts;
-mod_frac = 1 / 12;
+mod_frac = 1 / 6;
 
-% variable delay min/max in seconds, d_per is delay update period
+% variable delay min/max in seconds
 do_delay = 1;
 d_min = 0.1e-3;
 d_max = 8e-3;
-d_per = d_max * 8;
+%d_min = 40e-3;
+%d_max = 60e-3;
+d_max_samps = ceil(d_max * fs);
 
 % filter the output before recombination
 final_filter_n = 16;
@@ -49,8 +53,7 @@ d_phi = 0.012235;
 
 bw = i_bw;
 t = [0:ts:ts * (length(y) -1)];
-band_delay = zeros(1, length(y) + ceil(d_max / ts));
-recon = zeros(1, length(y) + ceil(d_max / ts));
+recon = zeros(length(y), 1);
 
 for i = (1:N)
   % create bands
@@ -76,26 +79,31 @@ for i = (1:N)
 
 
   if (do_delay)
-    % need to find a better way to do this.
-    % generate the filtered random noise, normalize it
+    band_delay = zeros(length(y), 1);
+    % generate some filtered random noise, normalize it
     % translate it to a range of [0, 1] so there's no -ve delay
-    d_block = ceil(d_per / ts);
-    r = randn(ceil(length(y) / d_block),1); 
+    r = randn(length(y),1); 
     b = fir1(n_noise, wc_noise);
     r_filt = 0.5 + filter(b, 1, r);
     r_filt = r_filt / max(abs(r_filt));
     r_filt = d_min .+ (r_filt .* (d_max - d_min));
-    for k = (1:(length(y) / d_block))
-      del = floor(r_filt(k) / ts);
-      for h = (1:d_block)
-        idx = (k - 1) * d_block + h; 
-        band_delay(idx + del) = (y0(i, idx) + y1(i, idx)) / sqrt(2);
-      endfor
+
+    % This takes some time so show some signs of life
+    text_waitbar(i / N, "Delay Processing");
+
+    % initialise to avoid -ve indexes
+    band_delay(1:d_max_samps) = (y0(i, 1:d_max_samps) + y1(i, 1:d_max_samps));
+    
+    for k = (d_max_samps:length(y))
+      del = floor(r_filt(k));
+      band_delay(k) = (y0(i, k - del) + y1(i, k - del));
     endfor
 
-    recon = recon .+ band_delay;
+    % player = audioplayer(band_delay / sqrt(2), fs);
+    % playblocking(player);
+    recon = recon .+ band_delay / sqrt(2);
   else
-    recon = recon .+ [((y0(i, :) + y1(i, :)) / sqrt(2)) zeros(1, ceil(d_max / ts))];
+    recon = recon .+ ((y0(i, :) + y1(i, :)) / sqrt(2));
   endif
 
   bw = bw * 2;
@@ -109,10 +117,10 @@ if (do_final_filter)
 endif
 
 wd = 0.5;
-ybar = [y' zeros(1, ceil(d_max / ts))];
-mix = (wd .* ybar) + ((1 - wd) .* recon);
+mix = (wd .* y) + ((1 - wd) .* recon);
 player = audioplayer(y, fs);
 playblocking(player);
 player = audioplayer(mix, fs);
 play(player);
 %plot(y, "-r;in;", mix, "-b;mix;")
+%plot(ybar, "-r;in;", recon, "-b;recon;")
