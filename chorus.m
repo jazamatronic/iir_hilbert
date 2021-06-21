@@ -5,10 +5,10 @@
 % Jared ANDERSON
 % 20210609
 clear all
-pkg load miscellaneous
+pkg load miscellaneous ; % for text_waitbar
 
 % Enter some audio
-[y, fs] = audioread("<your_fave_wave>");
+%[y, fs] = audioread("<your_fave_wave>");
 
 ts = 1/fs;
 
@@ -18,22 +18,24 @@ i_bw = 40;
 
 % Lots of filtered random noise used
 % simple FIR used here, n_noise is its order
-fc_noise = 1;
+fc_noise = 5;
 wc_noise = fc_noise / fs; % argument W to fir1 is already normalized to 2pi
-n_noise = 128;
+n_noise = 64;
 
 % po_max is max phase offset
 % mod_frac is fraction of bw for the band i.e. 1/12 = a semitone
-po_max = 10 * ts;
+po_max = 40 * ts;
 mod_frac = 1 / 6;
 
 % variable delay min/max in seconds
 do_delay = 1;
-d_min = 0.1e-3;
-d_max = 8e-3;
-%d_min = 40e-3;
-%d_max = 60e-3;
+%d_min = 0.1e-3;
+%d_max = 8e-3;
+d_min = 30e-3;
+d_max = 50e-3;
+d_min_samps = floor(d_min * fs);
 d_max_samps = ceil(d_max * fs);
+del_mod_max = 1;
 
 % filter the output before recombination
 final_filter_n = 16;
@@ -83,9 +85,11 @@ for i = (1:N)
     % translate it to a range of [0, 1] so there's no -ve delay
     r = randn(length(y),1); 
     b = fir1(n_noise, wc_noise);
-    r_filt = 0.5 + filter(b, 1, r);
+    r_filt = filter(b, 1, r);
     r_filt = r_filt / max(abs(r_filt));
-    r_filt = d_min .+ (r_filt .* (d_max - d_min));
+    tbar = t' .+ (po_max * r_filt);
+    del_mod = 0.5 .+ 0.5 .* sin(tbar * del_mod_max * 2 * pi);
+    del_mod = d_min_samps .+ del_mod .* (d_max_samps - d_min_samps);
 
     % This takes some time so show some signs of life
     text_waitbar(i / N, "Delay Processing");
@@ -94,7 +98,7 @@ for i = (1:N)
     band_delay(1:d_max_samps) = (y0(i, 1:d_max_samps) + y1(i, 1:d_max_samps));
     
     for k = (d_max_samps:length(y))
-      del = floor(r_filt(k));
+      del = floor(del_mod(k));
       band_delay(k) = (y0(i, k - del) + y1(i, k - del));
     endfor
 
