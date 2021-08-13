@@ -59,8 +59,8 @@ recon = zeros(length(y), 1);
 for i = (1:N)
   % create bands
   fc = bw + bw / 2;
-  [B, A] = iir_bp(fs, fc, bw);
-  bp = filter(B, A, y);
+  [Bbp, Abp] = iir_bp(fs, fc, bw);
+  bp = filter(Bbp, Abp, y);
 
   % each band gets its own modulation amount proportional to the band bw
   mod_max = bw * mod_frac; 
